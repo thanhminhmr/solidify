@@ -5,8 +5,8 @@ import java.io.IOException;
 
 final class ByteProcessor implements ObjectProcessor<Byte> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -29,8 +29,8 @@ final class ByteProcessor implements ObjectProcessor<Byte> {
 
 final class ShortProcessor implements ObjectProcessor<Short> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -53,8 +53,8 @@ final class ShortProcessor implements ObjectProcessor<Short> {
 
 final class IntegerProcessor implements ObjectProcessor<Integer> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -77,8 +77,8 @@ final class IntegerProcessor implements ObjectProcessor<Integer> {
 
 final class LongProcessor implements ObjectProcessor<Long> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -101,8 +101,8 @@ final class LongProcessor implements ObjectProcessor<Long> {
 
 final class FloatProcessor implements ObjectProcessor<Float> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -125,8 +125,8 @@ final class FloatProcessor implements ObjectProcessor<Float> {
 
 final class DoubleProcessor implements ObjectProcessor<Double> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -149,8 +149,8 @@ final class DoubleProcessor implements ObjectProcessor<Double> {
 
 final class BooleanProcessor implements ObjectProcessor<Boolean> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -173,8 +173,8 @@ final class BooleanProcessor implements ObjectProcessor<Boolean> {
 
 final class CharacterProcessor implements ObjectProcessor<Character> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -197,8 +197,8 @@ final class CharacterProcessor implements ObjectProcessor<Character> {
 
 final class StringProcessor implements ObjectProcessor<String> {
 	@Override
-	public boolean isInstanceIndependence() {
-		return false;
+	public int getCacheMode() {
+		return 1;
 	}
 
 	@Nonnull
@@ -209,40 +209,12 @@ final class StringProcessor implements ObjectProcessor<String> {
 
 	@Override
 	public void liquify(@Nonnull ObjectWriter objectWriter, @Nonnull String object) throws IOException {
-		objectWriter.writeLiterals(object);
+		objectWriter.writeUtf8(object);
 	}
 
 	@Nonnull
 	@Override
 	public String solidify(@Nonnull ObjectReader objectReader) throws IOException {
 		return objectReader.readUtf8();
-	}
-}
-
-final class ByteArrayProcessor implements ObjectProcessor<byte[]> {
-	@Override
-	public boolean isInstanceIndependence() {
-		return true;
-	}
-
-	@Nonnull
-	@Override
-	public Class<byte[]> getObjectClass() {
-		return byte[].class;
-	}
-
-	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nonnull byte[] object) throws IOException {
-		final int length = object.length;
-		objectWriter.writePackedInt(length);
-		for (final E object : objectArray) {
-			writeObject(object);
-		}
-	}
-
-	@Nonnull
-	@Override
-	public byte[] solidify(@Nonnull ObjectReader objectReader) throws IOException {
-		return new byte[0];
 	}
 }

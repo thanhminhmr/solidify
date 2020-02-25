@@ -14,7 +14,17 @@ public interface ObjectProcessor<E> {
 	@Nonnull ObjectProcessor<Character> CHAR_PROCESSOR = new CharacterProcessor();
 	@Nonnull ObjectProcessor<String> STRING_PROCESSOR = new StringProcessor();
 
-	boolean isInstanceIndependence();
+	/**
+	 * Get cache mode.
+	 * ret == 0 for Identity Cache. (default)
+	 * ret > 0 for Equality Cache.
+	 * ret < 0 for No Cache.
+	 *
+	 * @return cache mode
+	 */
+	default int getCacheMode() {
+		return 0;
+	}
 
 	@Nonnull
 	Class<E> getObjectClass();

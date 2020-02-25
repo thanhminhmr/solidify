@@ -4,9 +4,7 @@ import mrmathami.util.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,19 +25,27 @@ public final class Solidifier {
 	}
 
 	private static final class ObjectReaderImpl implements ObjectReader {
-		@Nonnull private final Map<Class<?>, Pair<List<Object>, ObjectProcessor<?>>> processorMap = new HashMap<>();
+		@Nonnull private final Map<Class<?>, Pair<ObjectProcessor<?>, List<Object>>> processorMap = new HashMap<>();
 		@Nonnull private final InputStream stream;
 
 		public ObjectReaderImpl(@Nonnull List<ObjectProcessor<?>> objectProcessors, @Nonnull InputStream stream) {
+			this.stream = stream instanceof BufferedInputStream ? stream : new BufferedInputStream(stream);
+
 			for (final ObjectProcessor<?> objectProcessor : objectProcessors) {
-				processorMap.put(objectProcessor.getObjectClass(), Pair.immutableOf(new ArrayList<>(), objectProcessor));
+				processorMap.put(objectProcessor.getObjectClass(),
+						Pair.immutableOf(objectProcessor, objectProcessor.getCacheMode() >= 0 ? new ArrayList<>() : null));
 			}
-			this.stream = stream;
 		}
 
 		@Override
 		public byte readByte() throws IOException {
 			return (byte) readUnsignedByte();
+		}
+
+		@Override
+		public byte[] readBytes(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			return readFromStream(size);
 		}
 
 		@Override
@@ -50,13 +56,37 @@ public final class Solidifier {
 		}
 
 		@Override
+		public int[] readUnsignedBytes(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final int[] values = new int[size];
+			for (int i = 0; i < size; i++) values[i] = readUnsignedByte();
+			return values;
+		}
+
+		@Override
 		public short readShort() throws IOException {
 			return (short) readUnsignedShort();
 		}
 
 		@Override
+		public short[] readShorts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final short[] values = new short[size];
+			for (int i = 0; i < size; i++) values[i] = readShort();
+			return values;
+		}
+
+		@Override
 		public int readUnsignedShort() throws IOException {
 			return readUnsignedByte() | readUnsignedByte() << 8;
+		}
+
+		@Override
+		public int[] readUnsignedShorts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final int[] values = new int[size];
+			for (int i = 0; i < size; i++) values[i] = readUnsignedShort();
+			return values;
 		}
 
 		@Override
@@ -68,15 +98,39 @@ public final class Solidifier {
 		}
 
 		@Override
+		public short[] readPackedShorts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final short[] values = new short[size];
+			for (int i = 0; i < size; i++) values[i] = readPackedShort();
+			return values;
+		}
+
+		@Override
 		public int readInt() throws IOException {
 			return readUnsignedByte() | readUnsignedByte() << 8
 					| readUnsignedByte() << 16 | readUnsignedByte() << 24;
 		}
 
 		@Override
+		public int[] readInts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final int[] values = new int[size];
+			for (int i = 0; i < size; i++) values[i] = readInt();
+			return values;
+		}
+
+		@Override
 		public long readUnsignedInt() throws IOException {
 			return readUnsignedByte() | readUnsignedByte() << 8
 					| readUnsignedByte() << 16 | (long) readUnsignedByte() << 24;
+		}
+
+		@Override
+		public long[] readUnsignedInts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final long[] values = new long[size];
+			for (int i = 0; i < size; i++) values[i] = readUnsignedInt();
+			return values;
 		}
 
 		@Override
@@ -88,8 +142,24 @@ public final class Solidifier {
 		}
 
 		@Override
+		public int[] readPackedInts(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final int[] values = new int[size];
+			for (int i = 0; i < size; i++) values[i] = readPackedInt();
+			return values;
+		}
+
+		@Override
 		public long readLong() throws IOException {
 			return readUnsignedInt() | (long) readInt() << 32;
+		}
+
+		@Override
+		public long[] readLongs(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final long[] values = new long[size];
+			for (int i = 0; i < size; i++) values[i] = readLong();
+			return values;
 		}
 
 		@Override
@@ -101,13 +171,37 @@ public final class Solidifier {
 		}
 
 		@Override
+		public long[] readPackedLongs(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final long[] values = new long[size];
+			for (int i = 0; i < size; i++) values[i] = readPackedLong();
+			return values;
+		}
+
+		@Override
 		public float readFloat() throws IOException {
 			return Float.intBitsToFloat(readInt());
 		}
 
 		@Override
+		public float[] readFloats(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final float[] values = new float[size];
+			for (int i = 0; i < size; i++) values[i] = readFloat();
+			return values;
+		}
+
+		@Override
 		public double readDouble() throws IOException {
 			return Double.longBitsToDouble(readLong());
+		}
+
+		@Override
+		public double[] readDoubles(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final double[] values = new double[size];
+			for (int i = 0; i < size; i++) values[i] = readDouble();
+			return values;
 		}
 
 		@Override
@@ -120,33 +214,47 @@ public final class Solidifier {
 
 		@Nonnull
 		@Override
-		public boolean[] readPackedBoolean(int size) throws IOException {
-			assert size > 0;
+		public boolean[] readBooleans(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+
 			final int length = size + 7 >> 3;
-			final byte[] bytes = readFromStream(length);
-			final boolean[] booleans = new boolean[size];
-
-			int i = 0;
-			do {
-				final byte value = bytes[i];
-				booleans[i] = (value & 0x80) != 0;
-				booleans[i + 1] = (value & 0x40) != 0;
-				booleans[i + 2] = (value & 0x20) != 0;
-				booleans[i + 3] = (value & 0x10) != 0;
-				booleans[i + 4] = (value & 0x08) != 0;
-				booleans[i + 5] = (value & 0x04) != 0;
-				booleans[i + 6] = (value & 0x02) != 0;
-				booleans[i + 7] = (value & 0x01) != 0;
-				i += 8;
-			} while (i < size - 7);
-
-			// TODO:
-			return booleans;
+			final byte[] buffer = readFromStream(length);
+			final boolean[] values = new boolean[size];
+			int vi = 7, bi = 0;
+			while (vi < size) {
+				final byte packed = buffer[bi++];
+				values[vi - 7] = (packed & 0x80) != 0;
+				values[vi - 6] = (packed & 0x40) != 0;
+				values[vi - 5] = (packed & 0x20) != 0;
+				values[vi - 4] = (packed & 0x10) != 0;
+				values[vi - 3] = (packed & 0x08) != 0;
+				values[vi - 2] = (packed & 0x04) != 0;
+				values[vi - 1] = (packed & 0x02) != 0;
+				values[vi] = (packed & 0x01) != 0;
+				vi += 8;
+			}
+			if (bi < length) {
+				vi -= 7;
+				byte value = buffer[bi];
+				do {
+					values[vi++] = (value & 0x80) != 0;
+					value += value;
+				} while (vi < size);
+			}
+			return values;
 		}
 
 		@Override
 		public char readChar() throws IOException {
 			return (char) readUnsignedShort();
+		}
+
+		@Override
+		public char[] readChars(int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			final char[] values = new char[size];
+			for (int i = 0; i < size; i++) values[i] = readChar();
+			return values;
 		}
 
 		@Nonnull
@@ -166,17 +274,52 @@ public final class Solidifier {
 		@Nullable
 		@Override
 		public <E> E readObject(@Nonnull Class<E> objectClass) throws IOException {
+			final Pair<ObjectProcessor<?>, List<Object>> pair = processorMap.get(objectClass);
+			if (pair == null) throw new IllegalArgumentException("Unregistered class: " + objectClass.getName());
+			@SuppressWarnings("unchecked") final ObjectProcessor<E> objectProcessor = (ObjectProcessor<E>) pair.getA();
+			if (objectProcessor.getCacheMode() < 0) return readBoolean() ? objectProcessor.solidify(this) : null;
 			final int identity = readPackedInt();
 			if (identity < 0) return null;
-			final Pair<List<Object>, ObjectProcessor<?>> pair = processorMap.get(objectClass);
-			if (pair == null) throw new IllegalArgumentException("Unregistered class: " + objectClass.getName());
-			final List<Object> objectList = pair.getA();
-			if (objectList.size() > identity) return objectClass.cast(objectList.get(identity));
-			@SuppressWarnings("unchecked") final ObjectProcessor<E> objectSolidifier = (ObjectProcessor<E>) pair.getB();
-			final E object = objectSolidifier.solidify(this);
-			if (objectList.size() != identity) throw new IOException("Invalid input data.");
+			@SuppressWarnings("unchecked") final List<E> objectList = (List<E>) pair.getB();
+			if (identity < objectList.size()) return objectList.get(identity);
+			final E object = objectProcessor.solidify(this);
+			if (identity != objectList.size()) throw new IOException("Invalid input data.");
 			objectList.add(object);
 			return object;
+		}
+
+		@Nonnull
+		@Override
+		public <E> E[] readObjects(@Nonnull Class<E> objectClass, int size) throws IOException {
+			if (size <= 0) throw new IllegalArgumentException("Size must be positive.");
+			@SuppressWarnings("unchecked") final E[] objects = (E[]) new Object[size];
+
+			final Pair<ObjectProcessor<?>, List<Object>> pair = processorMap.get(objectClass);
+			if (pair == null) throw new IllegalArgumentException("Unregistered class: " + objectClass.getName());
+			@SuppressWarnings("unchecked") final ObjectProcessor<E> objectProcessor = (ObjectProcessor<E>) pair.getA();
+			if (objectProcessor.getCacheMode() < 0) {
+				for (int i = 0; i < objects.length; i++) {
+					objects[i] = readBoolean() ? objectProcessor.solidify(this) : null;
+				}
+			} else {
+				@SuppressWarnings("unchecked") final List<E> objectList = (List<E>) pair.getB();
+				for (int i = 0; i < objects.length; i++) {
+					final int identity = readPackedInt();
+					if (identity >= 0) {
+						if (identity >= objectList.size()) {
+							final E object = objectProcessor.solidify(this);
+							if (identity != objectList.size()) throw new IOException("Invalid input data.");
+							objectList.add(object);
+							objects[i] = object;
+						} else {
+							objects[i] = objectList.get(identity);
+						}
+					} else {
+						objects[i] = null;
+					}
+				}
+			}
+			return objects;
 		}
 
 		private byte[] readFromStream(int length) throws IOException {
