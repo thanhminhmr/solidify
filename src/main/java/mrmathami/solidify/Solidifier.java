@@ -60,6 +60,14 @@ public final class Solidifier {
 		}
 
 		@Override
+		public short readPackedShort() throws IOException {
+			final int low = readUnsignedByte();
+			if (low < 0x80) return (short) low;
+			final int high = readUnsignedByte();
+			return (short) (high > 0 ? high << 7 | low & 0x7F : low);
+		}
+
+		@Override
 		public int readInt() throws IOException {
 			return readUnsignedByte() | readUnsignedByte() << 8
 					| readUnsignedByte() << 16 | readUnsignedByte() << 24;
@@ -110,6 +118,32 @@ public final class Solidifier {
 			throw new IOException("Invalid input data.");
 		}
 
+		@Nonnull
+		@Override
+		public boolean[] readPackedBoolean(int size) throws IOException {
+			assert size > 0;
+			final int length = size + 7 >> 3;
+			final byte[] bytes = readFromStream(length);
+			final boolean[] booleans = new boolean[size];
+
+			int i = 0;
+			do {
+				final byte value = bytes[i];
+				booleans[i] = (value & 0x80) != 0;
+				booleans[i + 1] = (value & 0x40) != 0;
+				booleans[i + 2] = (value & 0x20) != 0;
+				booleans[i + 3] = (value & 0x10) != 0;
+				booleans[i + 4] = (value & 0x08) != 0;
+				booleans[i + 5] = (value & 0x04) != 0;
+				booleans[i + 6] = (value & 0x02) != 0;
+				booleans[i + 7] = (value & 0x01) != 0;
+				i += 8;
+			} while (i < size - 7);
+
+			// TODO:
+			return booleans;
+		}
+
 		@Override
 		public char readChar() throws IOException {
 			return (char) readUnsignedShort();
@@ -121,22 +155,13 @@ public final class Solidifier {
 			final int length = readPackedInt();
 			if (length < 0) throw new IOException("Invalid input data.");
 			if (length == 0) return "";
-
-			final byte[] bytes = new byte[length];
-			int index = 0;
-			do {
-				final int count = stream.read(bytes, index, length - index);
-				if (count < 0) throw new EOFException();
-				index += count;
-			} while (index < length);
-
+			final byte[] bytes = readFromStream(length);
 			try {
 				return new String(bytes, StandardCharsets.UTF_8);
 			} catch (IllegalArgumentException e) {
 				throw new IOException("Invalid input data.", e);
 			}
 		}
-
 
 		@Nullable
 		@Override
@@ -154,6 +179,17 @@ public final class Solidifier {
 			return object;
 		}
 
+		private byte[] readFromStream(int length) throws IOException {
+			assert length > 0;
+			final byte[] bytes = new byte[length];
+			int index = 0;
+			do {
+				final int count = stream.read(bytes, index, length - index);
+				if (count < 0) throw new EOFException();
+				index += count;
+			} while (index < length);
+			return bytes;
+		}
 	}
 }
 

@@ -13,9 +13,13 @@ public interface ObjectReader {
 
 	int readUnsignedShort() throws IOException;
 
+	short readPackedShort() throws IOException;
+
 	int readInt() throws IOException;
 
 	long readUnsignedInt() throws IOException;
+
+	int readPackedInt() throws IOException;
 
 	long readLong() throws IOException;
 
@@ -27,12 +31,12 @@ public interface ObjectReader {
 
 	boolean readBoolean() throws IOException;
 
+	boolean[] readPackedBoolean(int size) throws IOException;
+
 	char readChar() throws IOException;
 
 	@Nonnull
 	String readUtf8() throws IOException;
-
-	int readPackedInt() throws IOException;
 
 	@Nullable
 	<E> E readObject(@Nonnull Class<E> objectClass) throws IOException;

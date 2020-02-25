@@ -27,9 +27,9 @@
 			<version>3.0.2</version>
 		</dependency>
 		<dependency>
-		<groupId>it.unimi.dsi</groupId>
-		<artifactId>fastutil</artifactId>
-		<version>8.3.1</version>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>8.3.1</version>
 		</dependency>
 	</dependencies>
 
