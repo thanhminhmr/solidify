@@ -2,10 +2,18 @@ package mrmathami;
 
 public final class Test {
 	public static void main(String[] args) {
-		final int[] x = new int[8];
+		String[] a = (String[]) new Object[0];
 
-		final Class<?> aClass = x.getClass();
+	}
 
-		System.out.println(aClass);
+	public enum EnumA {
+		ENUM_A("string"),
+		ENUM_B("string");
+
+		private final String string;
+
+		EnumA(String string) {
+			this.string = string;
+		}
 	}
 }

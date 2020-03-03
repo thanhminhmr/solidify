@@ -4,10 +4,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public interface Triple<A, B, C> {
-	static <A, B, C> Triple<A, B, C> mutableOf() {
-		return new MutableTriple<>();
-	}
-
 	static <A, B, C> Triple<A, B, C> mutableOf(A a, B b, C c) {
 		return new MutableTriple<>(a, b, c);
 	}
@@ -30,13 +26,10 @@ public interface Triple<A, B, C> {
 }
 
 final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
-	private static final long serialVersionUID = -3474747327908521167L;
+	private static final long serialVersionUID = -7621936610787295101L;
 	private A a;
 	private B b;
 	private C c;
-
-	MutableTriple() {
-	}
 
 	MutableTriple(A a, B b, C c) {
 		this.a = a;
@@ -95,7 +88,7 @@ final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
 }
 
 final class ImmutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
-	private static final long serialVersionUID = 3378137172841751050L;
+	private static final long serialVersionUID = -8961373889182803629L;
 	private final A a;
 	private final B b;
 	private final C c;

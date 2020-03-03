@@ -7,66 +7,99 @@ import java.io.IOException;
 public interface ObjectReader {
 	byte readByte() throws IOException;
 
+	@Nonnull
 	byte[] readBytes(int size) throws IOException;
 
 	int readUnsignedByte() throws IOException;
 
+	@Nonnull
 	int[] readUnsignedBytes(int size) throws IOException;
 
 	short readShort() throws IOException;
 
+	@Nonnull
 	short[] readShorts(int size) throws IOException;
 
 	int readUnsignedShort() throws IOException;
 
+	@Nonnull
 	int[] readUnsignedShorts(int size) throws IOException;
 
 	short readPackedShort() throws IOException;
 
+	@Nonnull
 	short[] readPackedShorts(int size) throws IOException;
 
 	int readInt() throws IOException;
 
+	@Nonnull
 	int[] readInts(int size) throws IOException;
 
 	long readUnsignedInt() throws IOException;
 
+	@Nonnull
 	long[] readUnsignedInts(int size) throws IOException;
 
 	int readPackedInt() throws IOException;
 
+	@Nonnull
 	int[] readPackedInts(int size) throws IOException;
 
 	long readLong() throws IOException;
 
+	@Nonnull
 	long[] readLongs(int size) throws IOException;
 
 	long readPackedLong() throws IOException;
 
+	@Nonnull
 	long[] readPackedLongs(int size) throws IOException;
 
 	float readFloat() throws IOException;
 
+	@Nonnull
 	float[] readFloats(int size) throws IOException;
+
+	float readPackedFloat() throws IOException;
+
+	@Nonnull
+	float[] readPackedFloats(int size) throws IOException;
 
 	double readDouble() throws IOException;
 
+	@Nonnull
 	double[] readDoubles(int size) throws IOException;
+
+	double readPackedDouble() throws IOException;
+
+	@Nonnull
+	double[] readPackedDoubles(int size) throws IOException;
 
 	boolean readBoolean() throws IOException;
 
+	@Nonnull
 	boolean[] readBooleans(int size) throws IOException;
 
 	char readChar() throws IOException;
 
-	char[] readChars(int size) throws IOException;
-
 	@Nonnull
-	String readUtf8() throws IOException;
+	char[] readChars(int size) throws IOException;
 
 	@Nullable
 	<E> E readObject(@Nonnull Class<E> objectClass) throws IOException;
 
 	@Nonnull
 	<E> E[] readObjects(@Nonnull Class<E> objectClass, int size) throws IOException;
+
+	interface Cache<E> {
+		@Nullable
+		E get(int index) throws IllegalStateException;
+
+		@Nonnull
+		Slot<E> alloc();
+
+		interface Slot<E> {
+			void put(@Nullable E object) throws IllegalStateException;
+		}
+	}
 }

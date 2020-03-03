@@ -37,9 +37,17 @@ public interface ObjectWriter {
 
 	void writeFloats(@Nonnull float... values) throws IOException;
 
+	void writePackedFloat(float value) throws IOException;
+
+	void writePackedFloats(@Nonnull float... values) throws IOException;
+
 	void writeDouble(double value) throws IOException;
 
 	void writeDoubles(@Nonnull double... values) throws IOException;
+
+	void writePackedDouble(double value) throws IOException;
+
+	void writePackedDoubles(@Nonnull double... values) throws IOException;
 
 	void writeBoolean(boolean value) throws IOException;
 
@@ -49,9 +57,11 @@ public interface ObjectWriter {
 
 	void writeChars(@Nonnull char... values) throws IOException;
 
-	void writeUtf8(@Nonnull String value) throws IOException;
-
 	<E> void writeObject(@Nonnull Class<E> objectClass, @Nullable E object) throws IOException;
 
 	<E> void writeObjects(@Nonnull Class<E> objectClass, @Nonnull E[] objects) throws IOException;
+
+	interface Cache<E> {
+		int putIfAbsent(@Nullable E object);
+	}
 }

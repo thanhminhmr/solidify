@@ -4,10 +4,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public interface Pair<A, B> {
-	static <A, B> Pair<A, B> mutableOf() {
-		return new MutablePair<>();
-	}
-
 	static <A, B> Pair<A, B> mutableOf(A a, B b) {
 		return new MutablePair<>(a, b);
 	}
@@ -29,9 +25,6 @@ final class MutablePair<A, B> implements Pair<A, B>, Serializable {
 	private static final long serialVersionUID = -3474747327908521167L;
 	private A a;
 	private B b;
-
-	MutablePair() {
-	}
 
 	MutablePair(A a, B b) {
 		this.a = a;
