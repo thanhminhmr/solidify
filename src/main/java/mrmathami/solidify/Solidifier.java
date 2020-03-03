@@ -11,7 +11,11 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class Solidifier {
 	@Nonnull
@@ -35,10 +39,7 @@ public final class Solidifier {
 
 			for (final ObjectProcessor<?> objectProcessor : objectProcessors) {
 				final Class<?> objectClass = objectProcessor.getObjectClass();
-				final boolean usingCache = objectProcessor.usingCache();
-				final Object[] preloadObjects = usingCache ? objectProcessor.preloadCache() : null;
-				final Cache<?> cache = usingCache ? new CacheImpl<>(objectProcessor.usingEqualityCache(), preloadObjects) : null;
-				if (classMap.put(objectClass, Pair.immutableOf(objectProcessor, cache)) != null) {
+				if (classMap.put(objectClass, Pair.immutableOf(objectProcessor, createCache(objectProcessor))) != null) {
 					throwAlreadyRegisteredClass(objectClass);
 				}
 			}
@@ -58,6 +59,13 @@ public final class Solidifier {
 
 		private static void throwAlreadyRegisteredClass(@Nonnull Class<?> objectClass) {
 			throw new IllegalArgumentException("Already registered class: " + objectClass.getName());
+		}
+
+		@Nullable
+		private static <E> Cache<E> createCache(@Nonnull ObjectProcessor<E> objectProcessor) {
+			return objectProcessor.usingCache()
+					? new CacheImpl<>(objectProcessor.usingEqualityCache(), objectProcessor.preloadCache())
+					: null;
 		}
 
 		// region //====== Basic read ======
@@ -383,41 +391,41 @@ public final class Solidifier {
 			} while (index < length);
 			return bytes;
 		}
-	}
 
-	private static final class CacheImpl<E> extends ArrayList<E> implements ObjectReader.Cache<E> {
-		private final Set<E> set;
+		private static final class CacheImpl<E> extends ArrayList<E> implements Cache<E> {
+			private final Set<E> set;
 
-		private CacheImpl(boolean isEqualityCache, @Nullable E[] preloadObjects) {
-			this.set = isEqualityCache ? new ObjectOpenHashSet<>() : new ReferenceOpenHashSet<>();
+			private CacheImpl(boolean isEqualityCache, @Nullable List<E> preloadObjects) {
+				this.set = isEqualityCache ? new ObjectOpenHashSet<>() : new ReferenceOpenHashSet<>();
 
-			if (preloadObjects != null) {
-				for (final E object : preloadObjects) {
-					if (!set.add(object)) throw new IllegalStateException("Object already existed in cache.");
-					add(object);
+				if (preloadObjects != null) {
+					for (final E object : preloadObjects) {
+						if (!set.add(object)) throw new IllegalStateException("Object already existed in cache.");
+						add(object);
+					}
 				}
 			}
-		}
 
-		@Nullable
-		@Override
-		public E get(int index) throws IllegalStateException {
-			try {
-				return super.get(index);
-			} catch (IndexOutOfBoundsException e) {
-				throw new IllegalStateException("Invalid cache index.", e);
+			@Nullable
+			@Override
+			public E get(int index) throws IllegalStateException {
+				try {
+					return super.get(index);
+				} catch (IndexOutOfBoundsException e) {
+					throw new IllegalStateException("Invalid cache index.", e);
+				}
 			}
-		}
 
-		@Nonnull
-		@Override
-		public Slot<E> alloc() {
-			final int index = size();
-			add(index, null);
-			return object -> {
-				if (!set.add(object)) throw new IllegalStateException("Object already existed in cache.");
-				if (set(index, object) != null) throw new IllegalStateException("Cache slot already used.");
-			};
+			@Nonnull
+			@Override
+			public Slot<E> alloc() {
+				final int index = size();
+				add(index, null);
+				return object -> {
+					if (!set.add(object)) throw new IllegalStateException("Object already existed in cache.");
+					if (set(index, object) != null) throw new IllegalStateException("Cache slot already used.");
+				};
+			}
 		}
 	}
 }

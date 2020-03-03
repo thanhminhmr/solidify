@@ -2,7 +2,6 @@ package mrmathami.solidify;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import mrmathami.solidify.ObjectWriter.Cache;
 import mrmathami.util.Pair;
 
 import javax.annotation.Nonnull;
@@ -34,11 +33,7 @@ public final class Liquifier {
 
 			for (final ObjectProcessor<?> objectProcessor : objectProcessors) {
 				final Class<?> objectClass = objectProcessor.getObjectClass();
-				final boolean usingCache = objectProcessor.usingCache();
-				final List<Object> preloadObjects = usingCache ? objectProcessor.preloadCache() : null;
-				final Cache<?> cache = usingCache ? objectProcessor.usingEqualityCache()
-						? new EqualityCacheImpl<>(preloadObjects) : new IdentityCacheImpl<>(preloadObjects) : null;
-				if (classMap.put(objectClass, Pair.immutableOf(objectProcessor, cache)) != null) {
+				if (classMap.put(objectClass, Pair.immutableOf(objectProcessor, createCache(objectProcessor))) != null) {
 					throwAlreadyRegisteredClass(objectClass);
 				}
 			}
@@ -58,6 +53,15 @@ public final class Liquifier {
 
 		private static void throwAlreadyRegisteredClass(@Nonnull Class<?> objectClass) {
 			throw new IllegalArgumentException("Already registered class: " + objectClass.getName());
+		}
+
+		@Nullable
+		private static <E> Cache<E> createCache(@Nonnull ObjectProcessor<E> objectProcessor) {
+			if (!objectProcessor.usingCache()) return null;
+			final List<E> preloadObjects = objectProcessor.preloadCache();
+			return objectProcessor.usingEqualityCache()
+					? new EqualityCacheImpl<>(preloadObjects)
+					: new IdentityCacheImpl<>(preloadObjects);
 		}
 
 		// region //====== Basic write ======
@@ -323,31 +327,41 @@ public final class Liquifier {
 			@SuppressWarnings("unchecked") final Cache<E> writerCache = (Cache<E>) pair.getB();
 			for (final E object : objects) objectProcessor.liquify(this, writerCache, object);
 		}
-	}
 
-	private static final class IdentityCacheImpl<E> extends Reference2IntOpenHashMap<E> implements ObjectWriter.Cache<E> {
-		public IdentityCacheImpl(@Nullable E[] preloadObjects) {
-			this.defRetValue = -1;
+		private static final class IdentityCacheImpl<E> extends Reference2IntOpenHashMap<E> implements Cache<E> {
+			public IdentityCacheImpl(@Nullable List<E> preloadObjects) {
+				this.defRetValue = -1;
 
-			if (preloadObjects != null) for (final E object : preloadObjects) putIfAbsent(object);
+				if (preloadObjects != null) {
+					for (final E object : preloadObjects) {
+						if (putIfAbsent(object) >= 0)
+							throw new IllegalStateException("Object already existed in cache.");
+					}
+				}
+			}
+
+			@Override
+			public int putIfAbsent(@Nullable E object) {
+				return putIfAbsent(object, size);
+			}
 		}
 
-		@Override
-		public int putIfAbsent(@Nullable E object) {
-			return putIfAbsent(object, size);
-		}
-	}
+		private static final class EqualityCacheImpl<E> extends Object2IntOpenHashMap<E> implements Cache<E> {
+			public EqualityCacheImpl(@Nullable List<E> preloadObjects) {
+				this.defRetValue = -1;
 
-	private static final class EqualityCacheImpl<E> extends Object2IntOpenHashMap<E> implements ObjectWriter.Cache<E> {
-		public EqualityCacheImpl(@Nullable E[] preloadObjects) {
-			this.defRetValue = -1;
+				if (preloadObjects != null) {
+					for (final E object : preloadObjects) {
+						if (putIfAbsent(object) >= 0)
+							throw new IllegalStateException("Object already existed in cache.");
+					}
+				}
+			}
 
-			if (preloadObjects != null) for (final E object : preloadObjects) putIfAbsent(object);
-		}
-
-		@Override
-		public int putIfAbsent(@Nullable E object) {
-			return putIfAbsent(object, size);
+			@Override
+			public int putIfAbsent(@Nullable E object) {
+				return putIfAbsent(object, size);
+			}
 		}
 	}
 }

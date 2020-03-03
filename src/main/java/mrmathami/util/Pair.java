@@ -22,7 +22,7 @@ public interface Pair<A, B> {
 }
 
 final class MutablePair<A, B> implements Pair<A, B>, Serializable {
-	private static final long serialVersionUID = -3474747327908521167L;
+	private static final long serialVersionUID = -2779147635421161888L;
 	private A a;
 	private B b;
 

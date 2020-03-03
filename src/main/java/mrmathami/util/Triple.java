@@ -26,7 +26,7 @@ public interface Triple<A, B, C> {
 }
 
 final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
-	private static final long serialVersionUID = -7621936610787295101L;
+	private static final long serialVersionUID = -7284554263674052927L;
 	private A a;
 	private B b;
 	private C c;

@@ -8,6 +8,11 @@ abstract class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 	@Nonnull protected final Class<E> enumClass;
 	@Nonnull protected final E[] enumValues;
 
+	private EnumProcessor(@Nonnull Class<E> enumClass, @Nonnull E[] enumValues) {
+		this.enumClass = enumClass;
+		this.enumValues = enumValues;
+	}
+
 	@Nonnull
 	static <E extends Enum<E>> EnumProcessor<E> of(@Nonnull Class<E> enumClass) {
 		final E[] enumValues = enumClass.getEnumConstants();
@@ -16,13 +21,8 @@ abstract class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 				: new ShortEnumProcessor<>(enumClass, enumValues);
 	}
 
-	private EnumProcessor(@Nonnull Class<E> enumClass, @Nonnull E[] enumValues) {
-		this.enumClass = enumClass;
-		this.enumValues = enumValues;
-	}
-
 	@Override
-	public boolean usingEqualityCache() {
+	public boolean usingCache() {
 		return false;
 	}
 

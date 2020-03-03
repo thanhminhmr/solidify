@@ -4,19 +4,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 final class ObjectArrayProcessor<E> implements ObjectProcessor<E[]> {
-	@Nonnull private final Class<E[]> arrayObjectClass;
-	@Nonnull private final Class<E> innerObjectClass;
+	@Nonnull private final Class<E[]> arrayClass;
+	@Nonnull private final Class<E> innerClass;
 	@Nonnull private final E[] empty;
 
-	public ObjectArrayProcessor(@Nonnull Class<E[]> arrayObjectClass, @Nonnull Class<E> innerObjectClass) {
-		this.arrayObjectClass = arrayObjectClass;
-		this.innerObjectClass = innerObjectClass;
-		this.empty = arrayObjectClass.cast(Array.newInstance(innerObjectClass, 0));
+	ObjectArrayProcessor(@Nonnull Class<E[]> arrayClass) {
+		@SuppressWarnings("unchecked") final Class<E> innerClass = (Class<E>) arrayClass.getComponentType();
+
+		this.arrayClass = arrayClass;
+		this.innerClass = innerClass;
+		this.empty = arrayClass.cast(Array.newInstance(innerClass, 0));
 	}
 
 	@Nonnull
@@ -28,7 +29,7 @@ final class ObjectArrayProcessor<E> implements ObjectProcessor<E[]> {
 	@Nonnull
 	@Override
 	public Class<E[]> getObjectClass() {
-		return arrayObjectClass;
+		return arrayClass;
 	}
 
 	@Override
@@ -47,7 +48,7 @@ final class ObjectArrayProcessor<E> implements ObjectProcessor<E[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeObjects(innerObjectClass, object);
+			objectWriter.writeObjects(innerClass, object);
 		}
 	}
 
@@ -61,7 +62,7 @@ final class ObjectArrayProcessor<E> implements ObjectProcessor<E[]> {
 			if (index < 0) {
 				final ObjectReader.Cache.Slot<E[]> slot = readerCache.alloc();
 				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final E[] object = objectReader.readObjects(innerObjectClass, length);
+				final E[] object = objectReader.readObjects(innerClass, length);
 				slot.put(object);
 				return object;
 			} else {
