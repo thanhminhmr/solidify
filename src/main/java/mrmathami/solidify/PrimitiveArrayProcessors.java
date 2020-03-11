@@ -3,16 +3,15 @@ package mrmathami.solidify;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 final class PrimitiveByteArrayProcessor implements ObjectProcessor<byte[]> {
-	private static final byte[] EMPTY = new byte[0];
+	@Nonnull private static final byte[] EMPTY = new byte[0];
+	@Nonnull private static final byte[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<byte[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public byte[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -22,11 +21,11 @@ final class PrimitiveByteArrayProcessor implements ObjectProcessor<byte[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<byte[]> writerCache, @Nullable byte[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<byte[]> writerCache, @Nullable byte[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -37,7 +36,7 @@ final class PrimitiveByteArrayProcessor implements ObjectProcessor<byte[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeBytes(object);
+			objectWriter.writeBytes(array);
 		}
 	}
 
@@ -49,27 +48,36 @@ final class PrimitiveByteArrayProcessor implements ObjectProcessor<byte[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<byte[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final byte[] object = objectReader.readBytes(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<byte[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final byte[] array = objectReader.readBytes(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
-	private static final short[] EMPTY = new short[0];
+	@Nonnull private static final short[] EMPTY = new short[0];
+	@Nonnull private static final short[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<short[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public short[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -79,11 +87,11 @@ final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<short[]> writerCache, @Nullable short[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<short[]> writerCache, @Nullable short[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -94,7 +102,7 @@ final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeShorts(object);
+			objectWriter.writeShorts(array);
 		}
 	}
 
@@ -106,27 +114,36 @@ final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<short[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final short[] object = objectReader.readShorts(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<short[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final short[] array = objectReader.readShorts(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveIntArrayProcessor implements ObjectProcessor<int[]> {
-	private static final int[] EMPTY = new int[0];
+	@Nonnull private static final int[] EMPTY = new int[0];
+	@Nonnull private static final int[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<int[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public int[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -136,11 +153,11 @@ final class PrimitiveIntArrayProcessor implements ObjectProcessor<int[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<int[]> writerCache, @Nullable int[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<int[]> writerCache, @Nullable int[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -151,7 +168,7 @@ final class PrimitiveIntArrayProcessor implements ObjectProcessor<int[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeInts(object);
+			objectWriter.writeInts(array);
 		}
 	}
 
@@ -163,27 +180,36 @@ final class PrimitiveIntArrayProcessor implements ObjectProcessor<int[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<int[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final int[] object = objectReader.readInts(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<int[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final int[] array = objectReader.readInts(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
-	private static final long[] EMPTY = new long[0];
+	@Nonnull private static final long[] EMPTY = new long[0];
+	@Nonnull private static final long[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<long[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public long[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -193,11 +219,11 @@ final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<long[]> writerCache, @Nullable long[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<long[]> writerCache, @Nullable long[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -208,7 +234,7 @@ final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeLongs(object);
+			objectWriter.writeLongs(array);
 		}
 	}
 
@@ -220,27 +246,36 @@ final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<long[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final long[] object = objectReader.readLongs(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<long[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final long[] array = objectReader.readLongs(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveFloatArrayProcessor implements ObjectProcessor<float[]> {
-	private static final float[] EMPTY = new float[0];
+	@Nonnull private static final float[] EMPTY = new float[0];
+	@Nonnull private static final float[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<float[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public float[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -250,11 +285,11 @@ final class PrimitiveFloatArrayProcessor implements ObjectProcessor<float[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<float[]> writerCache, @Nullable float[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<float[]> writerCache, @Nullable float[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -265,7 +300,7 @@ final class PrimitiveFloatArrayProcessor implements ObjectProcessor<float[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeFloats(object);
+			objectWriter.writeFloats(array);
 		}
 	}
 
@@ -277,27 +312,36 @@ final class PrimitiveFloatArrayProcessor implements ObjectProcessor<float[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<float[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final float[] object = objectReader.readFloats(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<float[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final float[] array = objectReader.readFloats(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveDoubleArrayProcessor implements ObjectProcessor<double[]> {
-	private static final double[] EMPTY = new double[0];
+	@Nonnull private static final double[] EMPTY = new double[0];
+	@Nonnull private static final double[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<double[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public double[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -307,11 +351,11 @@ final class PrimitiveDoubleArrayProcessor implements ObjectProcessor<double[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<double[]> writerCache, @Nullable double[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<double[]> writerCache, @Nullable double[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -322,7 +366,7 @@ final class PrimitiveDoubleArrayProcessor implements ObjectProcessor<double[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeDoubles(object);
+			objectWriter.writeDoubles(array);
 		}
 	}
 
@@ -334,27 +378,36 @@ final class PrimitiveDoubleArrayProcessor implements ObjectProcessor<double[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<double[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final double[] object = objectReader.readDoubles(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<double[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final double[] array = objectReader.readDoubles(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]> {
-	private static final boolean[] EMPTY = new boolean[0];
+	@Nonnull private static final boolean[] EMPTY = new boolean[0];
+	@Nonnull private static final boolean[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<boolean[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public boolean[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -364,11 +417,11 @@ final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]>
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<boolean[]> writerCache, @Nullable boolean[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<boolean[]> writerCache, @Nullable boolean[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -379,7 +432,7 @@ final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]>
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeBooleans(object);
+			objectWriter.writePackedBooleans(array);
 		}
 	}
 
@@ -391,27 +444,36 @@ final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]>
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<boolean[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final boolean[] object = objectReader.readBooleans(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<boolean[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final boolean[] array = objectReader.readPackedBooleans(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
 }
 
 final class PrimitiveCharArrayProcessor implements ObjectProcessor<char[]> {
-	private static final char[] EMPTY = new char[0];
+	@Nonnull private static final char[] EMPTY = new char[0];
+	@Nonnull private static final char[][] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Nonnull
 	@Override
-	public List<char[]> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public char[][] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -421,11 +483,11 @@ final class PrimitiveCharArrayProcessor implements ObjectProcessor<char[]> {
 	}
 
 	@Override
-	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<char[]> writerCache, @Nullable char[] object) throws IOException {
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<char[]> writerCache, @Nullable char[] array) throws IOException {
 		if (writerCache == null) throw new IllegalStateException("Object cache not available.");
 
-		final int length = object != null ? object.length : -1;
-		final int index = writerCache.putIfAbsent(length > 0 ? object : EMPTY);
+		final int length = array != null ? array.length : -1;
+		final int index = writerCache.putIfAbsent(length > 0 ? array : EMPTY);
 		if (index >= 0) {
 			objectWriter.writePackedInt(index);
 		} else {
@@ -436,7 +498,7 @@ final class PrimitiveCharArrayProcessor implements ObjectProcessor<char[]> {
 				objectWriter.writePackedInt(-0x8000);
 				objectWriter.writePackedInt(length - 0x8000);
 			}
-			objectWriter.writeChars(object);
+			objectWriter.writeChars(array);
 		}
 	}
 
@@ -448,15 +510,23 @@ final class PrimitiveCharArrayProcessor implements ObjectProcessor<char[]> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<char[]> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
-				final char[] object = objectReader.readChars(length);
-				slot.put(object);
-				return object;
+				final ObjectReader.CacheSlot<char[]> slot = readerCache.alloc();
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
+				final char[] array = objectReader.readChars(length);
+				slot.put(array);
+				return array;
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}

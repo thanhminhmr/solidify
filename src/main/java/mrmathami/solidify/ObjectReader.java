@@ -60,25 +60,15 @@ public interface ObjectReader {
 	@Nonnull
 	float[] readFloats(int size) throws IOException;
 
-	float readPackedFloat() throws IOException;
-
-	@Nonnull
-	float[] readPackedFloats(int size) throws IOException;
-
 	double readDouble() throws IOException;
 
 	@Nonnull
 	double[] readDoubles(int size) throws IOException;
 
-	double readPackedDouble() throws IOException;
-
-	@Nonnull
-	double[] readPackedDoubles(int size) throws IOException;
-
 	boolean readBoolean() throws IOException;
 
 	@Nonnull
-	boolean[] readBooleans(int size) throws IOException;
+	boolean[] readPackedBooleans(int size) throws IOException;
 
 	char readChar() throws IOException;
 
@@ -86,20 +76,29 @@ public interface ObjectReader {
 	char[] readChars(int size) throws IOException;
 
 	@Nullable
-	<E> E readObject(@Nonnull Class<E> objectClass) throws IOException;
+	<E> E readObject(@Nonnull Class<E> objectClass) throws IOException, SolidifierException;
 
 	@Nonnull
-	<E> E[] readObjects(@Nonnull Class<E> objectClass, int size) throws IOException;
+	<E> E[] readObjects(@Nonnull Class<E> objectClass, int size) throws IOException, SolidifierException;
 
 	interface Cache<E> {
 		@Nullable
-		E get(int index) throws IllegalStateException;
+		E get(int index) throws CacheException;
 
 		@Nonnull
-		Slot<E> alloc();
+		CacheSlot<E> alloc();
 
-		interface Slot<E> {
-			void put(@Nullable E object) throws IllegalStateException;
+	}
+
+	interface CacheSlot<E> {
+		void put(@Nullable E object) throws CacheException;
+	}
+
+	final class CacheException extends Exception {
+		private static final long serialVersionUID = 2713790600985545449L;
+
+		CacheException(String message) {
+			super(message);
 		}
 	}
 }

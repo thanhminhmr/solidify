@@ -22,13 +22,13 @@ abstract class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 	}
 
 	@Override
-	public boolean usingCache() {
+	public final boolean usingCache() {
 		return false;
 	}
 
 	@Nonnull
 	@Override
-	public Class<E> getObjectClass() {
+	public final Class<E> getObjectClass() {
 		return enumClass;
 	}
 

@@ -4,11 +4,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
 final class StringProcessor implements ObjectProcessor<String> {
 	private static final String EMPTY = "";
+	private static final String[] PRELOAD_OBJECTS = {null, EMPTY};
 
 	@Override
 	public boolean usingEqualityCache() {
@@ -17,8 +16,8 @@ final class StringProcessor implements ObjectProcessor<String> {
 
 	@Nonnull
 	@Override
-	public List<String> preloadCache() {
-		return Arrays.asList(null, EMPTY);
+	public String[] preloadCache() {
+		return PRELOAD_OBJECTS;
 	}
 
 	@Nonnull
@@ -56,7 +55,7 @@ final class StringProcessor implements ObjectProcessor<String> {
 		try {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
-				final ObjectReader.Cache.Slot<String> slot = readerCache.alloc();
+				final ObjectReader.CacheSlot<String> slot = readerCache.alloc();
 				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
 				final byte[] bytes = objectReader.readBytes(length);
 				final String object = new String(bytes, StandardCharsets.UTF_8);
@@ -65,7 +64,7 @@ final class StringProcessor implements ObjectProcessor<String> {
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (IllegalArgumentException | IllegalStateException e) {
+		} catch (ObjectReader.CacheException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}

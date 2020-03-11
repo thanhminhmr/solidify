@@ -37,29 +37,21 @@ public interface ObjectWriter {
 
 	void writeFloats(@Nonnull float... values) throws IOException;
 
-	void writePackedFloat(float value) throws IOException;
-
-	void writePackedFloats(@Nonnull float... values) throws IOException;
-
 	void writeDouble(double value) throws IOException;
 
 	void writeDoubles(@Nonnull double... values) throws IOException;
 
-	void writePackedDouble(double value) throws IOException;
-
-	void writePackedDoubles(@Nonnull double... values) throws IOException;
-
 	void writeBoolean(boolean value) throws IOException;
 
-	void writeBooleans(@Nonnull boolean... values) throws IOException;
+	void writePackedBooleans(@Nonnull boolean... values) throws IOException;
 
 	void writeChar(char value) throws IOException;
 
 	void writeChars(@Nonnull char... values) throws IOException;
 
-	<E> void writeObject(@Nonnull Class<E> objectClass, @Nullable E object) throws IOException;
+	<E> void writeObject(@Nonnull Class<E> objectClass, @Nullable E object) throws IOException, LiquifierException;
 
-	<E> void writeObjects(@Nonnull Class<E> objectClass, @Nonnull E[] objects) throws IOException;
+	<E> void writeObjects(@Nonnull Class<E> objectClass, @Nonnull E[] objects) throws IOException, LiquifierException;
 
 	interface Cache<E> {
 		int putIfAbsent(@Nullable E object);

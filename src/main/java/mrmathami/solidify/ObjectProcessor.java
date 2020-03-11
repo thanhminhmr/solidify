@@ -3,7 +3,6 @@ package mrmathami.solidify;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.List;
 
 public interface ObjectProcessor<E> {
 	default boolean usingCache() {
@@ -15,15 +14,15 @@ public interface ObjectProcessor<E> {
 	}
 
 	@Nullable
-	default List<E> preloadCache() {
+	default E[] preloadCache() {
 		return null;
 	}
 
 	@Nonnull
 	Class<E> getObjectClass();
 
-	void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<E> writerCache, @Nullable E object) throws IOException;
+	void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<E> writerCache, @Nullable E object) throws IOException, LiquifierException;
 
 	@Nullable
-	E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException;
+	E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException, SolidifierException;
 }
