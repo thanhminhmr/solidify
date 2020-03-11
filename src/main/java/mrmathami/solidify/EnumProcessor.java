@@ -4,21 +4,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
-abstract class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
+final class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 	@Nonnull protected final Class<E> enumClass;
 	@Nonnull protected final E[] enumValues;
 
-	private EnumProcessor(@Nonnull Class<E> enumClass, @Nonnull E[] enumValues) {
+	EnumProcessor(@Nonnull Class<E> enumClass) {
 		this.enumClass = enumClass;
-		this.enumValues = enumValues;
-	}
+		this.enumValues = enumClass.getEnumConstants();
 
-	@Nonnull
-	static <E extends Enum<E>> EnumProcessor<E> of(@Nonnull Class<E> enumClass) {
-		final E[] enumValues = enumClass.getEnumConstants();
-		return enumValues.length <= 255
-				? new ByteEnumProcessor<>(enumClass, enumValues)
-				: new ShortEnumProcessor<>(enumClass, enumValues);
+		assert enumValues.length < 65535;
 	}
 
 	@Override
@@ -32,45 +26,23 @@ abstract class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 		return enumClass;
 	}
 
-	private static final class ByteEnumProcessor<E extends Enum<E>> extends EnumProcessor<E> {
-		private ByteEnumProcessor(@Nonnull Class<E> enumClass, @Nonnull E[] enumValues) {
-			super(enumClass, enumValues);
-			assert enumValues.length <= 0xFF;
-		}
-
-		@Override
-		public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<E> writerCache, @Nullable E object) throws IOException {
-			objectWriter.writeByte((byte) (object == null ? 0xFF : object.ordinal()));
-		}
-
-		@Nullable
-		@Override
-		public E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException {
-			final int value = objectReader.readUnsignedByte();
-			if (value == 0xFF) return null;
-			if (value >= enumValues.length) throw new IOException("Invalid input data.");
-			return enumValues[value];
+	@Override
+	public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<E> writerCache, @Nullable E object) throws IOException {
+		final int value = object == null ? -1 : object.ordinal();
+		if (enumValues.length < 0xFF) {
+			objectWriter.writeByte((byte) value);
+		} else {
+			objectWriter.writeShort((short) value);
 		}
 	}
 
-	private static final class ShortEnumProcessor<E extends Enum<E>> extends EnumProcessor<E> {
-		private ShortEnumProcessor(@Nonnull Class<E> enumClass, @Nonnull E[] enumValues) {
-			super(enumClass, enumValues);
-			assert enumValues.length <= 0xFFFF;
-		}
-
-		@Override
-		public void liquify(@Nonnull ObjectWriter objectWriter, @Nullable ObjectWriter.Cache<E> writerCache, @Nullable E object) throws IOException {
-			objectWriter.writeShort((short) (object == null ? 0xFFFF : object.ordinal()));
-		}
-
-		@Nullable
-		@Override
-		public E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException {
-			final int value = objectReader.readUnsignedShort();
-			if (value == 0xFFFF) return null;
-			if (value >= enumValues.length) throw new IOException("Invalid input data.");
-			return enumValues[value];
-		}
+	@Nullable
+	@Override
+	public E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException {
+		final int length = enumValues.length;
+		final int value = length < 0xFF ? objectReader.readUnsignedByte() : objectReader.readUnsignedShort();
+		if (length < 0xFF && value == 0xFF || value == 0xFFFF) return null;
+		if (value >= length) throw new IOException("Invalid input data.");
+		return enumValues[value];
 	}
 }

@@ -3,8 +3,6 @@ package mrmathami.solidify;
 import javax.annotation.Nonnull;
 
 public final class ObjectProcessors {
-	@Nonnull public static final ObjectProcessor<String> STRING_PROCESSOR = new StringProcessor();
-
 	@Nonnull public static final ObjectProcessor<byte[]> BYTE_ARRAY_PROCESSOR = new PrimitiveByteArrayProcessor();
 	@Nonnull public static final ObjectProcessor<short[]> SHORT_ARRAY_PROCESSOR = new PrimitiveShortArrayProcessor();
 	@Nonnull public static final ObjectProcessor<int[]> INT_ARRAY_PROCESSOR = new PrimitiveIntArrayProcessor();
@@ -32,12 +30,14 @@ public final class ObjectProcessors {
 	@Nonnull public static final ObjectProcessor<Boolean[]> BOXED_BOOLEAN_ARRAY_PROCESSOR = new BoxedBooleanArrayProcessor();
 	@Nonnull public static final ObjectProcessor<Character[]> BOXED_CHARACTER_ARRAY_PROCESSOR = new BoxedCharacterArrayProcessor();
 
+	@Nonnull public static final ObjectProcessor<String> STRING_PROCESSOR = new StringProcessor();
+
 	private ObjectProcessors() {
 	}
 
 	@Nonnull
 	public static <E extends Enum<E>> ObjectProcessor<E> forEnum(@Nonnull Class<E> enumClass) {
-		return EnumProcessor.of(enumClass);
+		return new EnumProcessor<>(enumClass);
 	}
 
 	@Nonnull
