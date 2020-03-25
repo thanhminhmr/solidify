@@ -56,7 +56,15 @@ final class StringProcessor implements ObjectProcessor<String> {
 			final int index = objectReader.readPackedInt();
 			if (index < 0) {
 				final ObjectReader.CacheSlot<String> slot = readerCache.alloc();
-				final int length = index > -0x8000 ? -index : objectReader.readPackedInt() + 0x8000;
+				final int length;
+				if (index > -0x8000) {
+					length = -index;
+				} else {
+					final int lengthExt = objectReader.readPackedInt();
+					if (lengthExt < 0) throw new IOException("Invalid input data.");
+					length = lengthExt + 0x8000;
+					if (length < 0) throw new IOException("Invalid input data.");
+				}
 				final byte[] bytes = objectReader.readBytes(length);
 				final String object = new String(bytes, StandardCharsets.UTF_8);
 				slot.put(object);
@@ -64,7 +72,7 @@ final class StringProcessor implements ObjectProcessor<String> {
 			} else {
 				return readerCache.get(index);
 			}
-		} catch (ObjectReader.CacheException e) {
+		} catch (ObjectReader.CacheException | IllegalArgumentException e) {
 			throw new IOException("Invalid input data.", e);
 		}
 	}
