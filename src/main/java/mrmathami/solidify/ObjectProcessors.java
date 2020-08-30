@@ -1,6 +1,6 @@
 package mrmathami.solidify;
 
-import javax.annotation.Nonnull;
+import mrmathami.annotation.Nonnull;
 
 public final class ObjectProcessors {
 	@Nonnull public static final ObjectProcessor<byte[]> BYTE_ARRAY_PROCESSOR = new PrimitiveByteArrayProcessor();

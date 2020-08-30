@@ -4,8 +4,8 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import mrmathami.util.Pair;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import mrmathami.annotation.Nonnull;
+import mrmathami.annotation.Nullable;
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;

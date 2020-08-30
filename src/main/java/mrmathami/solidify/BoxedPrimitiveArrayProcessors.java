@@ -1,6 +1,6 @@
 package mrmathami.solidify;
 
-import javax.annotation.Nonnull;
+import mrmathami.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Arrays;
 

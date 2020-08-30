@@ -6,8 +6,8 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import mrmathami.util.Pair;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import mrmathami.annotation.Nonnull;
+import mrmathami.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

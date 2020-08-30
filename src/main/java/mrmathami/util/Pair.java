@@ -1,15 +1,31 @@
 package mrmathami.util;
 
+import mrmathami.annotation.Nonnull;
+import mrmathami.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
-public interface Pair<A, B> {
+public interface Pair<A, B> extends Serializable, Cloneable {
+
+	@Nonnull
 	static <A, B> Pair<A, B> mutableOf(A a, B b) {
 		return new MutablePair<>(a, b);
 	}
 
+	@Nonnull
+	static <A, B> Pair<A, B> mutableOf(@Nonnull Pair<A, B> pair) {
+		return new MutablePair<>(pair.getA(), pair.getB());
+	}
+
+	@Nonnull
 	static <A, B> Pair<A, B> immutableOf(A a, B b) {
 		return new ImmutablePair<>(a, b);
+	}
+
+	@Nonnull
+	static <A, B> Pair<A, B> immutableOf(@Nonnull Pair<A, B> pair) {
+		return new ImmutablePair<>(pair.getA(), pair.getB());
 	}
 
 	A getA();
@@ -19,10 +35,13 @@ public interface Pair<A, B> {
 	B getB();
 
 	B setB(B b) throws UnsupportedOperationException;
+
+	@Nonnull
+	Pair<A, B> clone();
 }
 
-final class MutablePair<A, B> implements Pair<A, B>, Serializable {
-	private static final long serialVersionUID = -2779147635421161888L;
+final class MutablePair<A, B> implements Pair<A, B> {
+	private static final long serialVersionUID = 3329068140030524856L;
 	private A a;
 	private B b;
 
@@ -55,8 +74,19 @@ final class MutablePair<A, B> implements Pair<A, B>, Serializable {
 		return oldB;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Nonnull
 	@Override
-	public boolean equals(Object object) {
+	public final MutablePair<A, B> clone() {
+		try {
+			return (MutablePair<A, B>) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public final boolean equals(@Nullable Object object) {
 		if (this == object) return true;
 		if (!(object instanceof Pair)) return false;
 		final Pair<?, ?> pair = (Pair<?, ?>) object;
@@ -64,13 +94,19 @@ final class MutablePair<A, B> implements Pair<A, B>, Serializable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return Objects.hash(a, b);
+	}
+
+	@Nonnull
+	@Override
+	public final String toString() {
+		return "{ " + a + ", " + b + " }";
 	}
 }
 
-final class ImmutablePair<A, B> implements Pair<A, B>, Serializable {
-	private static final long serialVersionUID = 3378137172841751050L;
+final class ImmutablePair<A, B> implements Pair<A, B> {
+	private static final long serialVersionUID = 6120253641955548765L;
 	private final A a;
 	private final B b;
 
@@ -99,8 +135,19 @@ final class ImmutablePair<A, B> implements Pair<A, B>, Serializable {
 		throw new UnsupportedOperationException("Immutable pair can't be modified.");
 	}
 
+	@SuppressWarnings("unchecked")
+	@Nonnull
 	@Override
-	public boolean equals(Object object) {
+	public ImmutablePair<A, B> clone() {
+		try {
+			return (ImmutablePair<A, B>) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public final boolean equals(@Nullable Object object) {
 		if (this == object) return true;
 		if (!(object instanceof Pair)) return false;
 		final Pair<?, ?> pair = (Pair<?, ?>) object;
@@ -108,7 +155,13 @@ final class ImmutablePair<A, B> implements Pair<A, B>, Serializable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return Objects.hash(a, b);
+	}
+
+	@Nonnull
+	@Override
+	public final String toString() {
+		return "{ " + a + ", " + b + " }";
 	}
 }

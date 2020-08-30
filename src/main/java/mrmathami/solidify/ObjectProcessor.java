@@ -1,7 +1,7 @@
 package mrmathami.solidify;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import mrmathami.annotation.Nonnull;
+import mrmathami.annotation.Nullable;
 import java.io.IOException;
 
 public interface ObjectProcessor<E> {

@@ -1,15 +1,31 @@
 package mrmathami.util;
 
+import mrmathami.annotation.Nonnull;
+import mrmathami.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
-public interface Triple<A, B, C> {
+public interface Triple<A, B, C> extends Serializable, Cloneable {
+
+	@Nonnull
 	static <A, B, C> Triple<A, B, C> mutableOf(A a, B b, C c) {
 		return new MutableTriple<>(a, b, c);
 	}
 
+	@Nonnull
+	static <A, B, C> Triple<A, B, C> mutableOf(@Nonnull Triple<A, B, C> triple) {
+		return new MutableTriple<>(triple.getA(), triple.getB(), triple.getC());
+	}
+
+	@Nonnull
 	static <A, B, C> Triple<A, B, C> immutableOf(A a, B b, C c) {
 		return new ImmutableTriple<>(a, b, c);
+	}
+
+	@Nonnull
+	static <A, B, C> Triple<A, B, C> immutableOf(@Nonnull Triple<A, B, C> triple) {
+		return new ImmutableTriple<>(triple.getA(), triple.getB(), triple.getC());
 	}
 
 	A getA();
@@ -23,10 +39,14 @@ public interface Triple<A, B, C> {
 	C getC();
 
 	C setC(C c) throws UnsupportedOperationException;
+
+	@Nonnull
+	Triple<A, B, C> clone();
+
 }
 
-final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
-	private static final long serialVersionUID = -7284554263674052927L;
+final class MutableTriple<A, B, C> implements Triple<A, B, C> {
+	private static final long serialVersionUID = 4891537451739231035L;
 	private A a;
 	private B b;
 	private C c;
@@ -73,8 +93,19 @@ final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
 		return oldC;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Nonnull
 	@Override
-	public boolean equals(Object object) {
+	public MutableTriple<A, B, C> clone() {
+		try {
+			return (MutableTriple<A, B, C>) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public final boolean equals(@Nullable Object object) {
 		if (this == object) return true;
 		if (!(object instanceof Triple)) return false;
 		final Triple<?, ?, ?> triple = (Triple<?, ?, ?>) object;
@@ -82,13 +113,19 @@ final class MutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return Objects.hash(a, b, c);
+	}
+
+	@Nonnull
+	@Override
+	public final String toString() {
+		return "{ " + a + ", " + b + ", " + c + " }";
 	}
 }
 
-final class ImmutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
-	private static final long serialVersionUID = -8961373889182803629L;
+final class ImmutableTriple<A, B, C> implements Triple<A, B, C> {
+	private static final long serialVersionUID = 9081974091400750542L;
 	private final A a;
 	private final B b;
 	private final C c;
@@ -129,8 +166,19 @@ final class ImmutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
 		throw new UnsupportedOperationException("Immutable triple can't be modified.");
 	}
 
+	@SuppressWarnings("unchecked")
+	@Nonnull
 	@Override
-	public boolean equals(Object object) {
+	public ImmutableTriple<A, B, C> clone() {
+		try {
+			return (ImmutableTriple<A, B, C>) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public final boolean equals(@Nullable Object object) {
 		if (this == object) return true;
 		if (!(object instanceof Triple)) return false;
 		final Triple<?, ?, ?> triple = (Triple<?, ?, ?>) object;
@@ -138,7 +186,13 @@ final class ImmutableTriple<A, B, C> implements Triple<A, B, C>, Serializable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return Objects.hash(a, b, c);
+	}
+
+	@Nonnull
+	@Override
+	public final String toString() {
+		return "{ " + a + ", " + b + ", " + c + " }";
 	}
 }
