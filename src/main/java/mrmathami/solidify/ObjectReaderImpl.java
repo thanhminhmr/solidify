@@ -2,10 +2,10 @@ package mrmathami.solidify;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import mrmathami.util.Pair;
-
 import mrmathami.annotation.Nonnull;
 import mrmathami.annotation.Nullable;
+import mrmathami.util.Pair;
+
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static mrmathami.solidify.ObjectProcessor.CacheType;
 
 final class ObjectReaderImpl implements ObjectReader {
 	@Nonnull private final Map<Class<?>, Pair<ObjectProcessor<?>, Cache<?>>> classMap;
@@ -47,10 +49,13 @@ final class ObjectReaderImpl implements ObjectReader {
 
 	@Nullable
 	private static <E> Cache<E> createCache(@Nonnull ObjectProcessor<E> objectProcessor) {
-		if (!objectProcessor.usingCache()) return null;
+		final CacheType cacheType = objectProcessor.getCacheType();
+		if (cacheType == CacheType.NO_CACHE) return null;
 
 		final List<E> list = new ArrayList<>();
-		final Set<E> set = objectProcessor.usingEqualityCache() ? new ObjectOpenHashSet<>() : new ReferenceOpenHashSet<>();
+		final Set<E> set = (cacheType == CacheType.EQUALITY_CACHE)
+				? new ObjectOpenHashSet<>()
+				: new ReferenceOpenHashSet<>();
 
 		final E[] preloadObjects = objectProcessor.preloadCache();
 		if (preloadObjects != null) {

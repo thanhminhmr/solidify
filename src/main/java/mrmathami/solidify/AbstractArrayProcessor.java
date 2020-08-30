@@ -25,9 +25,10 @@ public abstract class AbstractArrayProcessor<E> implements ObjectProcessor<E[]> 
 		this.preloadObjects = preloadObjects;
 	}
 
+	@Nonnull
 	@Override
-	public final boolean usingCache() {
-		return false;
+	public final CacheType getCacheType() {
+		return CacheType.IDENTITY_CACHE;
 	}
 
 	@Nonnull

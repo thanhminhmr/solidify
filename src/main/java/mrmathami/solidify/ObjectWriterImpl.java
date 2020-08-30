@@ -4,10 +4,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import mrmathami.util.Pair;
-
 import mrmathami.annotation.Nonnull;
 import mrmathami.annotation.Nullable;
+import mrmathami.util.Pair;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,11 +45,12 @@ final class ObjectWriterImpl implements ObjectWriter {
 
 	@Nullable
 	private static <E> Cache<E> createCache(@Nonnull ObjectProcessor<E> objectProcessor) {
-		if (!objectProcessor.usingCache()) return null;
+		final ObjectProcessor.CacheType cacheType = objectProcessor.getCacheType();
+		if (cacheType == ObjectProcessor.CacheType.NO_CACHE) return null;
 
 		final E[] preloadObjects = objectProcessor.preloadCache();
 
-		if (objectProcessor.usingEqualityCache()) {
+		if (cacheType == ObjectProcessor.CacheType.EQUALITY_CACHE) {
 			final Object2IntMap<E> map = new Object2IntOpenHashMap<>();
 			map.defaultReturnValue(-1);
 			if (preloadObjects != null) {

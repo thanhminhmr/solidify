@@ -2,16 +2,13 @@ package mrmathami.solidify;
 
 import mrmathami.annotation.Nonnull;
 import mrmathami.annotation.Nullable;
+
 import java.io.IOException;
 
 public interface ObjectProcessor<E> {
-	default boolean usingCache() {
-		return true;
-	}
 
-	default boolean usingEqualityCache() {
-		return false;
-	}
+	@Nonnull
+	CacheType getCacheType();
 
 	@Nullable
 	default E[] preloadCache() {
@@ -25,4 +22,11 @@ public interface ObjectProcessor<E> {
 
 	@Nullable
 	E solidify(@Nonnull ObjectReader objectReader, @Nullable ObjectReader.Cache<E> readerCache) throws IOException, SolidifierException;
+
+	enum CacheType {
+		NO_CACHE,
+		IDENTITY_CACHE,
+		EQUALITY_CACHE
+	}
+
 }

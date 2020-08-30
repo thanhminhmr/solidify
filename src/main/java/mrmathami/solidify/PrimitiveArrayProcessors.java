@@ -2,11 +2,18 @@ package mrmathami.solidify;
 
 import mrmathami.annotation.Nonnull;
 import mrmathami.annotation.Nullable;
+
 import java.io.IOException;
 
 final class PrimitiveByteArrayProcessor implements ObjectProcessor<byte[]> {
 	@Nonnull private static final byte[] EMPTY = new byte[0];
 	@Nonnull private static final byte[][] PRELOAD_OBJECTS = {null, EMPTY};
+
+	@Nonnull
+	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
 
 	@Nonnull
 	@Override
@@ -76,6 +83,12 @@ final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
 
 	@Nonnull
 	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
+
+	@Nonnull
+	@Override
 	public short[][] preloadCache() {
 		return PRELOAD_OBJECTS;
 	}
@@ -139,6 +152,12 @@ final class PrimitiveShortArrayProcessor implements ObjectProcessor<short[]> {
 final class PrimitiveIntArrayProcessor implements ObjectProcessor<int[]> {
 	@Nonnull private static final int[] EMPTY = new int[0];
 	@Nonnull private static final int[][] PRELOAD_OBJECTS = {null, EMPTY};
+
+	@Nonnull
+	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
 
 	@Nonnull
 	@Override
@@ -208,6 +227,12 @@ final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
 
 	@Nonnull
 	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
+
+	@Nonnull
+	@Override
 	public long[][] preloadCache() {
 		return PRELOAD_OBJECTS;
 	}
@@ -271,6 +296,12 @@ final class PrimitiveLongArrayProcessor implements ObjectProcessor<long[]> {
 final class PrimitiveFloatArrayProcessor implements ObjectProcessor<float[]> {
 	@Nonnull private static final float[] EMPTY = new float[0];
 	@Nonnull private static final float[][] PRELOAD_OBJECTS = {null, EMPTY};
+
+	@Nonnull
+	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
 
 	@Nonnull
 	@Override
@@ -340,6 +371,12 @@ final class PrimitiveDoubleArrayProcessor implements ObjectProcessor<double[]> {
 
 	@Nonnull
 	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
+
+	@Nonnull
+	@Override
 	public double[][] preloadCache() {
 		return PRELOAD_OBJECTS;
 	}
@@ -406,6 +443,12 @@ final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]>
 
 	@Nonnull
 	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
+
+	@Nonnull
+	@Override
 	public boolean[][] preloadCache() {
 		return PRELOAD_OBJECTS;
 	}
@@ -469,6 +512,12 @@ final class PrimitiveBooleanArrayProcessor implements ObjectProcessor<boolean[]>
 final class PrimitiveCharArrayProcessor implements ObjectProcessor<char[]> {
 	@Nonnull private static final char[] EMPTY = new char[0];
 	@Nonnull private static final char[][] PRELOAD_OBJECTS = {null, EMPTY};
+
+	@Nonnull
+	@Override
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
+	}
 
 	@Nonnull
 	@Override

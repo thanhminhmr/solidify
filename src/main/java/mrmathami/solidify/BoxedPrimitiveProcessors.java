@@ -2,12 +2,14 @@ package mrmathami.solidify;
 
 import mrmathami.annotation.Nonnull;
 import mrmathami.annotation.Nullable;
+
 import java.io.IOException;
 
 final class BoxedByteProcessor implements ObjectProcessor<Byte> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -30,9 +32,10 @@ final class BoxedByteProcessor implements ObjectProcessor<Byte> {
 }
 
 final class BoxedShortProcessor implements ObjectProcessor<Short> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -55,9 +58,10 @@ final class BoxedShortProcessor implements ObjectProcessor<Short> {
 }
 
 final class BoxedIntegerProcessor implements ObjectProcessor<Integer> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -80,9 +84,10 @@ final class BoxedIntegerProcessor implements ObjectProcessor<Integer> {
 }
 
 final class BoxedLongProcessor implements ObjectProcessor<Long> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -105,9 +110,10 @@ final class BoxedLongProcessor implements ObjectProcessor<Long> {
 }
 
 final class BoxedFloatProcessor implements ObjectProcessor<Float> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -165,9 +171,10 @@ final class BoxedFloatProcessor implements ObjectProcessor<Float> {
 }
 
 final class BoxedDoubleProcessor implements ObjectProcessor<Double> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -226,9 +233,10 @@ final class BoxedDoubleProcessor implements ObjectProcessor<Double> {
 }
 
 final class BoxedBooleanProcessor implements ObjectProcessor<Boolean> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
@@ -254,9 +262,10 @@ final class BoxedBooleanProcessor implements ObjectProcessor<Boolean> {
 }
 
 final class BoxedCharacterProcessor implements ObjectProcessor<Character> {
+	@Nonnull
 	@Override
-	public boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
