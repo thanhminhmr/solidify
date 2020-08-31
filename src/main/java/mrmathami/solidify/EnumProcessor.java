@@ -15,14 +15,15 @@ final class EnumProcessor<E extends Enum<E>> implements ObjectProcessor<E> {
 		assert enumValues.length < 65535;
 	}
 
+	@Nonnull
 	@Override
-	public final boolean usingCache() {
-		return false;
+	public CacheType getCacheType() {
+		return CacheType.NO_CACHE;
 	}
 
 	@Nonnull
 	@Override
-	public final Class<E> getObjectClass() {
+	public Class<E> getObjectClass() {
 		return enumClass;
 	}
 

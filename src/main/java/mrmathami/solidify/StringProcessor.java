@@ -9,9 +9,10 @@ final class StringProcessor implements ObjectProcessor<String> {
 	private static final String EMPTY = "";
 	private static final String[] PRELOAD_OBJECTS = {null, EMPTY};
 
+	@Nonnull
 	@Override
-	public boolean usingEqualityCache() {
-		return true;
+	public CacheType getCacheType() {
+		return CacheType.EQUALITY_CACHE;
 	}
 
 	@Nonnull
